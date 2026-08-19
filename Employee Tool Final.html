@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roche | Employee Training Portal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
+
+  /* ── AUTH ─────────────────────────────────────────── */
+  .auth-screen {
+    min-height: 100vh; display: flex; align-items: center;
+    justify-content: center; background: linear-gradient(135deg, #003087, #0066cc);
+  }
+  .auth-box {
+    background: white; padding: 40px; border-radius: 16px;
+    width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .auth-box .logo { text-align: center; font-size: 48px; margin-bottom: 12px; }
+  .auth-box h2 { color: #003087; margin-bottom: 6px; font-size: 22px; text-align: center; }
+  .auth-box .subtitle { color: #666; margin-bottom: 24px; font-size: 14px; text-align: center; }
+  .auth-tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
+  .auth-tab {
+    flex: 1; padding: 10px; text-align: center; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: #666;
+    border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+  }
+  .auth-tab.active { color: #003087; border-bottom-color: #003087; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 11px 14px; border: 2px solid #e2e8f0;
+    border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: #0066cc; }
+
+  /* ── BUTTONS ─────────────────────────────────────── */
+  .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-full { width: 100%; padding: 12px; font-size: 15px; }
+  .btn-primary   { background: #003087; color: white; }
+  .btn-primary:hover   { background: #0066cc; }
+  .btn-secondary { background: #f0f2f5; color: #333; }
+  .btn-secondary:hover { background: #e2e8f0; }
+  .btn-success   { background: #38a169; color: white; }
+  .btn-success:hover   { background: #2f855a; }
+  .btn-warning   { background: #dd6b20; color: white; }
+  .btn-warning:hover   { background: #c05621; }
+
+  /* ── FEEDBACK BOXES ──────────────────────────────── */
+  .feedback-box { border-radius: 8px; padding: 12px 14px; font-size: 13px; margin-top: 12px; }
+  .feedback-error   { background: #fff5f5; border: 1px solid #feb2b2; color: #742a2a; }
+  .feedback-success { background: #f0fff4; border: 1px solid #9ae6b4; color: #276749; }
+  .feedback-info    { background: #ebf8ff; border: 1px solid #bee3f8; color: #2b6cb0; }
+  .feedback-warn    { background: #fffbeb; border: 1px solid #f6e05e; color: #744210; }
+
+  /* ── MAIN APP ────────────────────────────────────── */
+  #mainApp { display: none; min-height: 100vh; }
+
+  /* ── TOPBAR ──────────────────────────────────────── */
+  .topbar {
+    background: #003087; color: white; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+  .topbar-left h1 { font-size: 18px; font-weight: 600; }
+  .topbar-left span { font-size: 13px; opacity: 0.8; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .user-badge { background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+  .topbar-btn {
+    background: rgba(255,255,255,0.1); color: white;
+    border: 1px solid rgba(255,255,255,0.3); padding: 6px 14px;
+    border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;
+  }
+  .topbar-btn:hover { background: rgba(255,255,255,0.25); }
+  .lang-active { background: rgba(255,255,255,0.3) !important; font-weight: 600; }
+
+  /* ── NAV TABS ────────────────────────────────────── */
+  .nav-tabs {
+    background: white; padding: 0 24px; display: flex; gap: 4px;
+    border-bottom: 2px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.04); overflow-x: auto;
+  }
+  .nav-tab {
+    padding: 14px 18px; font-size: 14px; font-weight: 500; color: #666;
+    cursor: pointer; border: none; background: none; white-space: nowrap;
+    border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+  }
+  .nav-tab:hover { color: #003087; }
+  .nav-tab.active { color: #003087; border-bottom-color: #003087; font-weight: 600; }
+  .page-section { display: none; }
+  .page-section.active { display: block; }
+
+  /* ── BANNERS ─────────────────────────────────────── */
+  .notify-banner {
+    background: linear-gradient(135deg, #c53030, #e53e3e);
+    color: white; padding: 16px 24px; display: none;
+    align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .notify-banner .banner-text { font-size: 14px; font-weight: 500; }
+  .notify-dismiss {
+    background: rgba(255,255,255,0.2); border: none; color: white;
+    padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px;
+  }
+  /* REDO BANNER — NEW */
+  .redo-banner {
+    margin: 16px 24px 0; background: #fffbeb; border: 1px solid #f6e05e;
+    border-radius: 10px; padding: 14px 18px; display: none;
+    align-items: center; gap: 12px; font-size: 13px; color: #744210;
+  }
+  .redo-banner .redo-icon { font-size: 24px; flex-shrink: 0; }
+
+  /* WHAT'S NEW BANNER */
+  .whats-new-banner {
+    margin: 20px 24px 0; background: linear-gradient(135deg, #003087, #0066cc);
+    color: white; border-radius: 12px; padding: 18px 22px;
+    display: none; align-items: center; gap: 16px;
+  }
+  .whats-new-banner .wn-icon { font-size: 32px; }
+  .whats-new-banner .wn-text h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .whats-new-banner .wn-text p  { font-size: 13px; opacity: 0.9; }
+  .wn-close {
+    margin-left: auto; background: rgba(255,255,255,0.2); border: none;
+    color: white; width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── SUMMARY ─────────────────────────────────────── */
+  .summary-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 20px 24px 0; }
+  .summary-card { background: white; border-radius: 12px; padding: 18px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .summary-card .number { font-size: 28px; font-weight: 700; color: #003087; }
+  .summary-card .label  { font-size: 12px; color: #888; margin-top: 4px; }
+  .summary-card.green  .number { color: #38a169; }
+  .summary-card.orange .number { color: #dd6b20; }
+  .summary-card.red    .number { color: #e53e3e; }
+
+  /* ── PROGRESS ────────────────────────────────────── */
+  .progress-section { padding: 16px 24px 0; }
+  .progress-card {
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .progress-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .progress-card h3 { font-size: 15px; color: #003087; font-weight: 600; }
+  .progress-bar-wrap { background: #e2e8f0; border-radius: 20px; height: 16px; }
+  .progress-bar-fill {
+    height: 16px; border-radius: 20px;
+    background: linear-gradient(90deg, #003087, #0066cc); transition: width 1s ease;
+  }
+  .progress-milestones { display: flex; justify-content: space-between; margin-top: 8px; padding: 0 2px; }
+  .milestone { font-size: 11px; color: #aaa; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .milestone.reached { color: #38a169; font-weight: 600; }
+  .milestone-dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; }
+  .milestone.reached .milestone-dot { background: #38a169; }
+
+  /* ── CONTENT / CONTROLS ──────────────────────────── */
+  .content { padding: 16px 24px; }
+  .controls-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-btn {
+    padding: 8px 14px; border-radius: 20px; border: 2px solid #e2e8f0;
+    background: white; color: #666; font-size: 13px; cursor: pointer;
+    font-weight: 500; transition: all 0.2s; white-space: nowrap;
+  }
+  .filter-btn:hover { border-color: #003087; color: #003087; }
+  .filter-btn.active { background: #003087; color: white; border-color: #003087; }
+  .sort-select {
+    padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 20px;
+    font-size: 13px; outline: none; background: white; cursor: pointer; color: #555; margin-left: auto;
+  }
+  .sort-select:focus { border-color: #0066cc; }
+  .search-input { padding: 8px 14px; border: 2px solid #e2e8f0; border-radius: 20px; font-size: 13px; outline: none; width: 200px; }
+  .search-input:focus { border-color: #0066cc; }
+
+  /* ── TRAINING CARDS ──────────────────────────────── */
+  .trainings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .training-card {
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-left: 4px solid #e2e8f0; transition: all 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .training-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .training-card.new-card       { border-left-color: #38a169; }
+  .training-card.updated-card   { border-left-color: #dd6b20; }
+  .training-card.completed-card { border-left-color: #a0aec0; opacity: 0.85; }
+  .training-card.overdue-card   { border-left-color: #e53e3e; background: #fffafa; }
+  .training-card.upcoming-card  { border-left-color: #3182ce; }
+  .training-card.needsredo-card { border-left-color: #f6ad55; background: #fffdf7; }
+
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .card-title  { font-size: 15px; font-weight: 600; color: #1a202c; flex: 1; margin-right: 10px; line-height: 1.4; }
+  .card-badges { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; flex-shrink: 0; }
+
+  /* ── BADGES ──────────────────────────────────────── */
+  .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; display: inline-block; }
+  .badge-new      { background: #c6f6d5; color: #276749; }
+  .badge-updated  { background: #feebc8; color: #744210; }
+  .badge-overdue  { background: #fed7d7; color: #742a2a; }
+  .badge-soon     { background: #fefcbf; color: #744210; }
+  .badge-ok       { background: #e9f5ff; color: #1a365d; }
+  .badge-done     { background: #e2e8f0; color: #4a5568; }
+  .badge-nodate   { background: #f0f2f5; color: #888; }
+  .badge-new-item { background: #003087; color: white; }
+  .badge-redo     { background: #fed7d7; color: #742a2a; } /* NEW */
+
+  .card-meta { display: flex; gap: 14px; font-size: 12px; color: #666; margin-bottom: 6px; flex-wrap: wrap; }
+
+  /* Manager notes — NEW */
+  .card-notes { background: #f7f0ff; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #6b46c1; margin-bottom: 8px; }
+
+  /* Due soon warning */
+  .due-warning {
+    background: #fffbeb; border: 1px solid #f6e05e; border-radius: 6px;
+    padding: 6px 10px; font-size: 12px; color: #744210; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-spacer { flex: 1; }
+
+  /* Card buttons */
+  .complete-btn {
+    width: 100%; padding: 10px; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px;
+  }
+  .complete-btn.not-done { background: #003087; color: white; }
+  .complete-btn.not-done:hover { background: #0066cc; }
+  .complete-btn.done { background: #f0fff4; color: #38a169; border: 2px solid #9ae6b4; cursor: default; }
+  .complete-btn.redo-btn { background: #dd6b20; color: white; } /* NEW */
+  .complete-btn.redo-btn:hover { background: #c05621; }
+  .completed-on { font-size: 11px; color: #888; margin-top: 4px; }
+
+  /* ── ALERT BANNERS (dashboard) ───────────────────── */
+  .alert-banner { border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; }
+  .alert-banner.overdue-alert { background: #fff5f5; border: 1px solid #feb2b2; }
+  .alert-banner.soon-alert    { background: #fffbeb; border: 1px solid #f6e05e; }
+  .alert-banner h4 { font-size: 14px; margin-bottom: 6px; }
+  .overdue-alert h4 { color: #c53030; }
+  .soon-alert h4    { color: #b7791f; }
+  .alert-banner ul  { font-size: 13px; padding-left: 16px; }
+  .overdue-alert ul { color: #742a2a; }
+  .soon-alert ul    { color: #744210; }
+  .alert-banner ul li { margin-bottom: 3px; }
+
+  /* ── SETTINGS ────────────────────────────────────── */
+  .settings-content { padding: 20px 24px; max-width: 500px; }
+  .settings-card {
+    background: white; border-radius: 12px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px;
+  }
+  .settings-card h3 { font-size: 16px; font-weight: 600; color: #003087; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #f0f2f5; }
+  .pw-strength { font-size: 12px; margin-top: 4px; height: 16px; }
+  .pw-weak   { color: #e53e3e; }
+  .pw-medium { color: #dd6b20; }
+  .pw-strong { color: #38a169; }
+
+  /* ── EMPTY STATE ─────────────────────────────────── */
+  .empty-state { text-align: center; padding: 60px 20px; color: #888; grid-column: 1/-1; }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── TOAST ───────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #003087; color: white; padding: 14px 20px;
+    border-radius: 10px; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 9999; display: none; animation: slideIn 0.3s ease;
+  }
+  .toast.error   { background: #c53030; }
+  .toast.success { background: #276749; }
+  @keyframes slideIn { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+  /* ── SPINNER ─────────────────────────────────────── */
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: white;
+    border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── CONFETTI ────────────────────────────────────── */
+  #confettiCanvas { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9998; display:none; }
+
+  /* ── MILESTONE POPUP ─────────────────────────────── */
+  .milestone-popup {
+    position: fixed; top:50%; left:50%; transform: translate(-50%,-50%) scale(0);
+    background: white; border-radius: 20px; padding: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;
+    z-index: 9997; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); min-width:300px;
+  }
+  .milestone-popup.show { transform: translate(-50%,-50%) scale(1); }
+  .milestone-popup .mp-emoji { font-size: 60px; margin-bottom: 12px; }
+  .milestone-popup h2 { color: #003087; font-size: 24px; margin-bottom: 8px; }
+  .milestone-popup p  { color: #666; font-size: 14px; margin-bottom: 20px; }
+
+  @media (max-width: 600px) {
+    .summary-bar { grid-template-columns: repeat(2,1fr); }
+    .auth-box { width: 95%; padding: 28px 20px; }
+    .search-input { width: 100%; }
+    .sort-select { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<!-- MILESTONE POPUP -->
+<div class="milestone-popup" id="milestonePopup">
+  <div class="mp-emoji" id="mpEmoji">🎉</div>
+  <h2 id="mpTitle">Great job!</h2>
+  <p id="mpText">Keep going!</p>
+  <button class="btn btn-primary" onclick="closeMilestone()">Continue 💪</button>
+</div>
+
+<!-- ── AUTH SCREEN ──────────────────────────────────────── -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <div class="logo">🏥</div>
+    <h2 data-i18n="portalTitle">Roche Training Portal</h2>
+    <p class="subtitle" data-i18n="portalSubtitle">Employee Self-Service</p>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">
+      <button class="topbar-btn lang-active" id="authLangEN" onclick="setLang('en')">🇬🇧 EN</button>
+      <button class="topbar-btn" id="authLangDE" onclick="setLang('de')">🇩🇪 DE</button>
+    </div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login')"    id="loginTab"    data-i18n="login">Login</div>
+      <div class="auth-tab"        onclick="switchAuthTab('register')" id="registerTab" data-i18n="register">Register</div>
+    </div>
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label data-i18n="email">Email Address</label>
+        <input type="email" id="loginEmail" placeholder="your.email@roche.com">
+      </div>
+      <div class="form-group">
+        <label data-i18n="password">Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••"
+          onkeypress="if(event.key==='Enter') handleLogin()">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="handleLogin()" id="loginBtn" data-i18n="loginBtn">Login</button>
+      <div id="loginFeedback"></div>
+    </div>
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label data-i18n="fullName">Full Name <span style="color:#e53e3e">*</span></label>
+        <input type="text" id="regName" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label data-i18n="email">Email Address <span style="color:#e53e3e">*</span></label>
+        <input type="email" id="regEmail" placeholder="your.email@roche.com">
+      </div>
+      <div class="form-group">
+        <label data-i18n="password">Password <span style="color:#e53e3e">*</span></label>
+        <input type="password" id="regPassword" placeholder="Min. 6 characters">
+      </div>
+      <div class="form-group">
+        <label data-i18n="confirmPassword">Confirm Password <span style="color:#e53e3e">*</span></label>
+        <input type="password" id="regPasswordConfirm" placeholder="••••••••"
+          onkeypress="if(event.key==='Enter') handleRegister()">
+      </div>
+      <div class="form-group">
+        <label>Job Type <span style="color:#e53e3e">*</span></label>
+        <select id="regJobType">
+          <option value="">-- Select your Job Type --</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="handleRegister()" id="registerBtn" data-i18n="requestAccess">
+        Request Access
+      </button>
+      <div id="registerFeedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PENDING SCREEN ────────────────────────────────────── -->
+<div class="auth-screen" id="pendingScreen" style="display:none">
+  <div class="auth-box" style="text-align:center">
+    <div style="font-size:56px;margin-bottom:16px">⏳</div>
+    <h2 style="color:#003087;margin-bottom:10px" data-i18n="awaitingApproval">Awaiting Approval</h2>
+    <p style="color:#666;font-size:14px;line-height:1.7" data-i18n="awaitingText">
+      Your registration has been sent to your manager. You will be able to log in once approved.
+    </p>
+    <button class="btn btn-secondary btn-full" onclick="backToLogin()" style="margin-top:20px" data-i18n="backToLogin">
+      ← Back to Login
+    </button>
+  </div>
+</div>
+
+<!-- ── MAIN APP ──────────────────────────────────────────── -->
+<div id="mainApp">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>🏥 <span data-i18n="portalTitle">Roche Training Portal</span></h1>
+      <span id="welcomeText"></span>
+    </div>
+    <div class="topbar-right">
+      <div class="user-badge" id="userBadge">👤</div>
+      <button class="topbar-btn lang-active" id="langEN" onclick="setLang('en')">🇬🇧 EN</button>
+      <button class="topbar-btn"             id="langDE" onclick="setLang('de')">🇩🇪 DE</button>
+      <button class="topbar-btn" onclick="switchPage('settings')">⚙️ <span data-i18n="settings">Settings</span></button>
+      <button class="topbar-btn" onclick="handleLogout()" data-i18n="logout">Logout</button>
+    </div>
+  </div>
+
+  <!-- MANAGER REMINDER BANNER -->
+  <div class="notify-banner" id="notifyBanner">
+    <span class="banner-text">🔔 <span id="notifyText"></span></span>
+    <button class="notify-dismiss" onclick="dismissNotification()" data-i18n="dismiss">Dismiss</button>
+  </div>
+
+  <!-- REDO BANNER — NEW FEATURE -->
+  <div class="redo-banner" id="redoBanner">
+    <span class="redo-icon">⚠️</span>
+    <div>
+      <strong id="redoBannerText"></strong>
+      <div style="margin-top:2px;font-size:12px">
+        Please find trainings marked <strong>"⚠️ Redo Required"</strong> and complete them again.
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('dashboard')" data-i18n="dashboard">📊 Dashboard</button>
+    <button class="nav-tab"        onclick="switchPage('trainings')" data-i18n="myTrainings">📋 My Trainings</button>
+    <button class="nav-tab"        onclick="switchPage('settings')"  data-i18n="settings">⚙️ Settings</button>
+  </div>
+
+  <!-- ── DASHBOARD ────────────────────────────────────── -->
+  <div class="page-section active" id="page-dashboard">
+
+    <!-- WHAT'S NEW BANNER -->
+    <div class="whats-new-banner" id="whatsNewBanner">
+      <div class="wn-icon">✨</div>
+      <div class="wn-text">
+        <h4 id="whatsNewTitle">New trainings added!</h4>
+        <p id="whatsNewText"></p>
+      </div>
+      <button class="wn-close" onclick="document.getElementById('whatsNewBanner').style.display='none'">×</button>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-bar">
+      <div class="summary-card">
+        <div class="number" id="totalCount">0</div>
+        <div class="label" data-i18n="totalTrainings">Total Trainings</div>
+      </div>
+      <div class="summary-card green">
+        <div class="number" id="completedCount">0</div>
+        <div class="label" data-i18n="completed">Completed</div>
+      </div>
+      <div class="summary-card orange">
+        <div class="number" id="pendingCount">0</div>
+        <div class="label" data-i18n="pending">Pending</div>
+      </div>
+      <div class="summary-card red">
+        <div class="number" id="overdueCount">0</div>
+        <div class="label" data-i18n="overdue">Overdue</div>
+      </div>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-section">
+      <div class="progress-card">
+        <div class="progress-card-header">
+          <h3>📊 <span data-i18n="yourProgress">Your Overall Progress</span></h3>
+          <span id="progressPct" style="font-weight:700;color:#003087;font-size:18px">0%</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+        </div>
+        <div class="progress-milestones">
+          <div class="milestone" id="m33"><div class="milestone-dot"></div>33%</div>
+          <div class="milestone" id="m50"><div class="milestone-dot"></div>50%</div>
+          <div class="milestone" id="m75"><div class="milestone-dot"></div>75%</div>
+          <div class="milestone" id="m100"><div class="milestone-dot"></div>100%</div>
+        </div>
+        <div style="font-size:12px;color:#888;margin-top:8px" id="progressLabel">0 of 0 completed</div>
+      </div>
+    </div>
+
+    <!-- ALERTS & LINK -->
+    <div class="content">
+      <div id="dashOverdueBanner" class="alert-banner overdue-alert" style="display:none">
+        <h4>🔴 <span data-i18n="overdueTrainings">Overdue Trainings</span></h4>
+        <ul id="dashOverdueList"></ul>
+      </div>
+      <div id="dashSoonBanner" class="alert-banner soon-alert" style="display:none">
+        <h4>⚠️ <span data-i18n="dueSoon">Due Soon</span></h4>
+        <ul id="dashSoonList"></ul>
+      </div>
+      <div style="text-align:center;margin-top:8px">
+        <button class="btn btn-primary" onclick="switchPage('trainings')" data-i18n="viewAllTrainings">
+          📋 View All My Trainings →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MY TRAININGS ─────────────────────────────────── -->
+  <div class="page-section" id="page-trainings">
+    <div class="content">
+      <div class="controls-bar">
+        <button class="filter-btn active" onclick="setFilter('all',this)"       data-i18n="all">All</button>
+        <button class="filter-btn"        onclick="setFilter('new',this)">🟢 <span data-i18n="new">New</span></button>
+        <button class="filter-btn"        onclick="setFilter('updated',this)">🟠 <span data-i18n="updated">Updated</span></button>
+        <button class="filter-btn"        onclick="setFilter('redo',this)">⚠️ Redo Required</button>
+        <button class="filter-btn"        onclick="setFilter('upcoming',this)">📅 <span data-i18n="upcoming">Upcoming</span></button>
+        <button class="filter-btn"        onclick="setFilter('pending',this)">⏳ <span data-i18n="pending">Pending</span></button>
+        <button class="filter-btn"        onclick="setFilter('completed',this)">✅ <span data-i18n="completed">Completed</span></button>
+        <button class="filter-btn"        onclick="setFilter('overdue',this)">🔴 <span data-i18n="overdue">Overdue</span></button>
+        <select class="sort-select" onchange="setSort(this.value)" id="sortSelect">
+          <option value="urgency"   data-i18n="sortUrgency">Sort: Urgency</option>
+          <option value="date-asc"  data-i18n="sortDateAsc">Sort: Date ↑</option>
+          <option value="date-desc" data-i18n="sortDateDesc">Sort: Date ↓</option>
+          <option value="az"        data-i18n="sortAZ">Sort: A → Z</option>
+          <option value="za"        data-i18n="sortZA">Sort: Z → A</option>
+        </select>
+        <input class="search-input" type="text" id="searchInput"
+          placeholder="🔍 Search trainings..." oninput="setSearch(this.value)">
+      </div>
+      <div class="trainings-grid" id="trainingsGrid">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <p data-i18n="loadingTrainings">Loading your trainings...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ──────────────────────────────────────── -->
+  <div class="page-section" id="page-settings">
+    <div class="settings-content">
+      <div class="settings-card">
+        <h3>🔒 <span data-i18n="changePassword">Change Password</span></h3>
+        <div class="form-group">
+          <label data-i18n="currentPassword">Current Password</label>
+          <input type="password" id="curPw" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label data-i18n="newPassword">New Password</label>
+          <input type="password" id="newPw" placeholder="Min. 6 characters" oninput="checkPwStrength(this.value)">
+          <div class="pw-strength" id="pwStrength"></div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPw" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="changePassword()" data-i18n="updatePassword">🔒 Update Password</button>
+        <div id="pwFeedback" style="margin-top:10px"></div>
+      </div>
+      <div class="settings-card">
+        <h3>ℹ️ <span data-i18n="accountInfo">Account Info</span></h3>
+        <div style="font-size:14px;color:#666;line-height:2">
+          <div><strong>Name:</strong> <span id="infoName">-</span></div>
+          <div><strong>Job Type:</strong> <span id="infoJobType">-</span></div>
+          <div><strong>Email:</strong> <span id="infoEmail">-</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /mainApp -->
+
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, enableIndexedDbPersistence,
+         collection, addDoc, getDocs, getDoc, getDocFromServer,
+         doc, updateDoc, setDoc, onSnapshot, query, where }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         signOut, onAuthStateChanged, updatePassword,
+         EmailAuthProvider, reauthenticateWithCredential }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAkW4g_eMb_rGiGrIr1kuyzvchVDFnGGaU",
+  authDomain: "roche-curriculum-tool.firebaseapp.com",
+  projectId: "roche-curriculum-tool",
+  storageBucket: "roche-curriculum-tool.firebasestorage.app",
+  messagingSenderId: "318965624495",
+  appId: "1:318965624495:web:ff26c1c0f17d9857f76e5a"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// Offline persistence
+enableIndexedDbPersistence(db).catch(e => {
+  if (e.code === 'failed-precondition') console.warn('Multiple tabs open');
+  else if (e.code === 'unimplemented')  console.warn('Offline not supported');
+});
+
+// ── TRANSLATIONS ────────────────────────────────────────
+const i18n = {
+  en: {
+    portalTitle:'Roche Training Portal', portalSubtitle:'Employee Self-Service',
+    login:'Login', register:'Register', loginBtn:'Login', requestAccess:'Request Access',
+    email:'Email Address', password:'Password', confirmPassword:'Confirm Password',
+    fullName:'Full Name',
+    awaitingApproval:'Awaiting Approval',
+    awaitingText:'Your registration has been sent to your manager. You will be able to log in once approved.',
+    backToLogin:'← Back to Login',
+    dashboard:'📊 Dashboard', myTrainings:'📋 My Trainings', settings:'⚙️ Settings', logout:'Logout',
+    totalTrainings:'Total Trainings', completed:'Completed', pending:'Pending', overdue:'Overdue',
+    yourProgress:'Your Overall Progress',
+    overdueTrainings:'Overdue Trainings', dueSoon:'Due Soon',
+    viewAllTrainings:'📋 View All My Trainings →',
+    all:'All', new:'New', updated:'Updated', upcoming:'Upcoming',
+    sortUrgency:'Sort: Urgency', sortDateAsc:'Sort: Date ↑', sortDateDesc:'Sort: Date ↓',
+    sortAZ:'Sort: A → Z', sortZA:'Sort: Z → A',
+    loadingTrainings:'Loading your trainings...',
+    noTrainings:'No trainings found for this filter.',
+    markComplete:'✓ Mark as Complete', completedBtn:'✅ Completed',
+    dueOn:'Due', noDate:'No Date',
+    dueSoonWarning:'Due in', days:'days',
+    changePassword:'Change Password', currentPassword:'Current Password',
+    newPassword:'New Password', updatePassword:'🔒 Update Password',
+    accountInfo:'Account Info', dismiss:'Dismiss',
+    whatsNewTitle:'New trainings added this week!',
+    milestones: {
+      33:  { emoji:'🌱', title:'Good start!',    text:'You\'ve completed 33% of your trainings. Keep it up!' },
+      50:  { emoji:'⭐', title:'Halfway there!', text:'50% done! You\'re making great progress.' },
+      75:  { emoji:'🚀', title:'Almost there!',  text:'75% complete! Just a little more to go!' },
+      100: { emoji:'🏆', title:'All done!',      text:'Congratulations! You\'ve completed all your trainings!' }
+    }
+  },
+  de: {
+    portalTitle:'Roche Schulungsportal', portalSubtitle:'Mitarbeiter-Self-Service',
+    login:'Anmelden', register:'Registrieren', loginBtn:'Anmelden', requestAccess:'Zugang beantragen',
+    email:'E-Mail-Adresse', password:'Passwort', confirmPassword:'Passwort bestätigen',
+    fullName:'Vollständiger Name',
+    awaitingApproval:'Wartet auf Genehmigung',
+    awaitingText:'Ihre Registrierung wurde an Ihren Manager gesendet. Sie können sich nach der Genehmigung anmelden.',
+    backToLogin:'← Zurück zur Anmeldung',
+    dashboard:'📊 Dashboard', myTrainings:'📋 Meine Schulungen', settings:'⚙️ Einstellungen', logout:'Abmelden',
+    totalTrainings:'Schulungen gesamt', completed:'Abgeschlossen', pending:'Ausstehend', overdue:'Überfällig',
+    yourProgress:'Ihr Gesamtfortschritt',
+    overdueTrainings:'Überfällige Schulungen', dueSoon:'Bald fällig',
+    viewAllTrainings:'📋 Alle meine Schulungen →',
+    all:'Alle', new:'Neu', updated:'Aktualisiert', upcoming:'Bevorstehend',
+    sortUrgency:'Sortierung: Dringlichkeit', sortDateAsc:'Sortierung: Datum ↑', sortDateDesc:'Sortierung: Datum ↓',
+    sortAZ:'Sortierung: A → Z', sortZA:'Sortierung: Z → A',
+    loadingTrainings:'Schulungen werden geladen...',
+    noTrainings:'Keine Schulungen für diesen Filter gefunden.',
+    markComplete:'✓ Als abgeschlossen markieren', completedBtn:'✅ Abgeschlossen',
+    dueOn:'Fällig', noDate:'Kein Datum',
+    dueSoonWarning:'Fällig in', days:'Tagen',
+    changePassword:'Passwort ändern', currentPassword:'Aktuelles Passwort',
+    newPassword:'Neues Passwort', updatePassword:'🔒 Passwort aktualisieren',
+    accountInfo:'Kontoinformationen', dismiss:'Schließen',
+    whatsNewTitle:'Diese Woche neue Schulungen hinzugefügt!',
+    milestones: {
+      33:  { emoji:'🌱', title:'Guter Start!',     text:'Sie haben 33% Ihrer Schulungen abgeschlossen. Weiter so!' },
+      50:  { emoji:'⭐', title:'Halbzeit!',         text:'50% geschafft! Sie machen großartige Fortschritte.' },
+      75:  { emoji:'🚀', title:'Fast geschafft!',  text:'75% abgeschlossen! Noch ein kleines Stück!' },
+      100: { emoji:'🏆', title:'Alles erledigt!',  text:'Herzlichen Glückwunsch! Alle Schulungen abgeschlossen!' }
+    }
+  }
+};
+
+// ── STATE ───────────────────────────────────────────────
+let currentEmployee      = null;
+let currentUser          = null;
+let allTrainings         = [];
+let currentFilter        = 'all';
+let currentSort          = 'urgency';
+let currentSearch        = '';
+let currentLang          = 'en';
+let celebratedMilestones = new Set();
+
+// ── LANGUAGE ────────────────────────────────────────────
+window.setLang = (lang) => {
+  currentLang = lang;
+  const tr = i18n[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (tr[key] !== undefined) el.textContent = tr[key];
+  });
+  ['langEN','authLangEN'].forEach(id => { const e=document.getElementById(id); if(e) e.classList.toggle('lang-active', lang==='en'); });
+  ['langDE','authLangDE'].forEach(id => { const e=document.getElementById(id); if(e) e.classList.toggle('lang-active', lang==='de'); });
+  if (currentEmployee) renderDashboard();
+};
+
+// ── HELPERS ─────────────────────────────────────────────
+function t(key) { return i18n[currentLang][key] ?? i18n.en[key] ?? key; }
+
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (type==='error'?' error': type==='success'?' success':'');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3500);
+}
+
+function setFeedback(id, msg, type='info') {
+  const el = document.getElementById(id); if (!el) return;
+  if (!msg) { el.innerHTML = ''; return; }
+  const cls = { error:'feedback-error', success:'feedback-success', info:'feedback-info', warn:'feedback-warn' }[type] || 'feedback-info';
+  el.innerHTML = `<div class="feedback-box ${cls}">${msg}</div>`;
+}
+
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function normName(n) { return String(n).toLowerCase().trim().replace(/\s+/g,' '); }
+
+function getUrgency(d) {
+  if (!d) return { label: t('noDate'), cls: 'badge-nodate', days: 999 };
+  const diff = Math.ceil((new Date(d) - new Date().setHours(0,0,0,0)) / 86400000);
+  if (diff < 0)   return { label: `${t('overdue')} (${Math.abs(diff)}d)`,        cls: 'badge-overdue', days: diff };
+  if (diff <= 3)  return { label: `${t('dueSoonWarning')} ${diff} ${t('days')} 🔴`, cls: 'badge-overdue', days: diff };
+  if (diff <= 7)  return { label: `${t('dueSoonWarning')} ${diff} ${t('days')} ⚠️`, cls: 'badge-soon',    days: diff };
+  return                 { label: `${t('dueOn')} ${new Date(d).toLocaleDateString()}`, cls: 'badge-ok', days: diff };
+}
+
+// ── NEW: redo detection ─────────────────────────────────
+function isNeedsRedo(tr) {
+  if (!currentEmployee) return false;
+  const comp        = currentEmployee.completed  || [];
+  const completedAt = (currentEmployee.completedAt || {})[tr.id] || 0;
+  return comp.includes(tr.id) && tr.status === 'UPDATED' && (tr.updatedAt || 0) > completedAt;
+}
+
+// ── SCREENS ─────────────────────────────────────────────
+function showScreen(s) {
+  document.getElementById('authScreen').style.display    = s==='auth'    ? 'flex'  : 'none';
+  document.getElementById('pendingScreen').style.display = s==='pending' ? 'flex'  : 'none';
+  document.getElementById('mainApp').style.display       = s==='app'     ? 'block' : 'none';
+}
+
+// ── NAV ─────────────────────────────────────────────────
+window.switchPage = (page) => {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(tb => tb.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  const order = ['dashboard','trainings','settings'];
+  const tabs  = document.querySelectorAll('.nav-tab');
+  const idx   = order.indexOf(page);
+  if (tabs[idx]) tabs[idx].classList.add('active');
+};
+
+// ── AUTH TABS ────────────────────────────────────────────
+window.switchAuthTab = (tab) => {
+  document.getElementById('loginForm').style.display    = tab==='login'    ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('loginTab').classList.toggle('active',    tab==='login');
+  document.getElementById('registerTab').classList.toggle('active', tab==='register');
+  setFeedback('loginFeedback',''); setFeedback('registerFeedback','');
+};
+
+// ── LOAD JOB TYPES INTO REGISTER DROPDOWN ───────────────
+async function loadJobTypes() {
+  try {
+    const snap = await getDocs(collection(db, 'jobTypes'));
+    const sel  = document.getElementById('regJobType');
+    sel.innerHTML = '<option value="">-- Select your Job Type --</option>';
+    snap.docs
+      .map(d => d.data().name)
+      .sort()
+      .forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        sel.appendChild(opt);
+      });
+  } catch(e) { console.warn('Could not load job types:', e); }
+}
+loadJobTypes();
+
+// ── REGISTER ────────────────────────────────────────────
+window.handleRegister = async () => {
+  const name    = document.getElementById('regName').value.trim();
+  const email   = document.getElementById('regEmail').value.trim();
+  const pw      = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regPasswordConfirm').value;
+  const jobType = document.getElementById('regJobType').value;
+
+  setFeedback('registerFeedback', '');
+  if (!name || !email || !pw || !jobType) {
+    setFeedback('registerFeedback', '⚠️ Please fill in all fields including job type.', 'error'); return;
+  }
+  if (pw.length < 6)  { setFeedback('registerFeedback', '⚠️ Password min. 6 characters.', 'error'); return; }
+  if (pw !== confirm) { setFeedback('registerFeedback', '⚠️ Passwords do not match.', 'error'); return; }
+
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting...';
+
+  let cred = null;
+  try {
+    // Check if a registration already exists for this name
+    const regSnap = await getDocs(collection(db, 'registrations'));
+    const existReg = regSnap.docs.find(d => normName(d.data().name) === normName(name));
+    if (existReg) {
+      const s = existReg.data().status;
+      if (s === 'pending')  { setFeedback('registerFeedback', '⏳ Already submitted. Awaiting manager approval.', 'warn'); btn.disabled=false; btn.innerHTML=t('requestAccess'); return; }
+      if (s === 'approved') { setFeedback('registerFeedback', '✅ Already registered! Please login.', 'info');             btn.disabled=false; btn.innerHTML=t('requestAccess'); return; }
+      if (s === 'rejected') { setFeedback('registerFeedback', '❌ Registration rejected. Contact your manager.', 'error'); btn.disabled=false; btn.innerHTML=t('requestAccess'); return; }
+    }
+
+    btn.innerHTML = '<span class="spinner"></span> Creating account...';
+
+    // Create Firebase Auth user
+    cred = await createUserWithEmailAndPassword(auth, email, pw);
+    console.log('✅ Auth user created:', cred.user.uid);
+
+    // Write registration to Firestore using uid as doc ID
+    await setDoc(doc(db, 'registrations', cred.user.uid), {
+      uid:         cred.user.uid,
+      name,
+      email,
+      jobType,
+      status:      'pending',
+      requestedAt: Date.now()
+    });
+    console.log('✅ Registration doc written');
+
+    // Sign out immediately — must wait for approval
+    await signOut(auth);
+
+    setFeedback('registerFeedback', '✅ Request submitted! Awaiting manager approval.', 'success');
+    btn.innerHTML = t('requestAccess');
+
+  } catch(err) {
+    console.error('Registration error:', err.code, err.message);
+
+    // If auth was created but Firestore failed — clean up orphan
+    if (cred) {
+      try { await cred.user.delete(); } catch(de) { console.warn('Could not clean up auth user:', de); }
+    }
+
+    const msgs = {
+      'auth/email-already-in-use': '❌ This email is already registered. Please login.',
+      'auth/invalid-email':        '❌ Invalid email address.',
+      'auth/weak-password':        '❌ Password is too weak.',
+      'permission-denied':         '❌ Database permission denied. Contact your manager.',
+    };
+    setFeedback('registerFeedback', msgs[err.code] || `❌ ${err.message}`, 'error');
+    btn.disabled = false; btn.innerHTML = t('requestAccess');
+  }
+};
+
+// ── LOGIN ────────────────────────────────────────────────
+window.handleLogin = async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPassword').value;
+  if (!email || !pw) { setFeedback('loginFeedback', '⚠️ Enter email and password.', 'error'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Logging in...';
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+    // onAuthStateChanged handles the rest
+  } catch(err) {
+    const msgs = {
+      'auth/user-not-found':  '❌ No account with this email.',
+      'auth/wrong-password':  '❌ Incorrect password.',
+      'auth/invalid-email':   '❌ Invalid email address.',
+      'auth/invalid-credential': '❌ Incorrect email or password.',
+    };
+    setFeedback('loginFeedback', msgs[err.code] || '❌ Login failed. Please try again.', 'error');
+    btn.disabled = false; btn.innerHTML = t('loginBtn');
+  }
+};
+document.getElementById('loginPassword').addEventListener('keypress', e => { if(e.key==='Enter') window.handleLogin(); });
+
+// ── AUTH STATE ───────────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    showScreen('auth');
+    resetLoginBtn();
+    return;
+  }
+  currentUser = user;
+  console.log('👤 Auth fired for:', user.email, '| UID:', user.uid);
+
+  try {
+    let regData  = null;
+    let regDocId = null;
+
+    // Always read fresh from server — never from cache
+    // This is the core fix for the "still pending" bug
+    let regSnap = null;
+    try {
+      regSnap = await getDocFromServer(doc(db, 'registrations', user.uid));
+    } catch(serverErr) {
+      console.warn('Server read failed, falling back to cache:', serverErr);
+      regSnap = await getDoc(doc(db, 'registrations', user.uid));
+    }
+
+    if (regSnap && regSnap.exists()) {
+      regData  = regSnap.data();
+      regDocId = regSnap.id;
+      console.log('✅ Registration found. Status:', regData.status);
+    } else {
+      // Fallback for any old registrations stored differently
+      console.warn('No doc at registrations/' + user.uid + ' — searching by uid field...');
+      const allRegs = await getDocs(collection(db, 'registrations'));
+      const found   = allRegs.docs.find(d => d.data().uid === user.uid);
+      if (found) {
+        regData  = found.data();
+        regDocId = found.id;
+        console.log('✅ Found by uid field. Doc ID:', regDocId, '| Status:', regData.status);
+      }
+    }
+
+    if (!regData) {
+      console.error('❌ No registration found for uid:', user.uid);
+      setFeedback('loginFeedback', '❌ No registration found. Please register first.', 'error');
+      showScreen('auth');
+      return;
+    }
+
+    console.log('📋 Status is:', regData.status);
+
+    // PENDING — show waiting screen, do NOT sign out
+    if (regData.status === 'pending') {
+      showScreen('pending');
+      resetLoginBtn();
+      return;
+    }
+
+    // REJECTED
+    if (regData.status === 'rejected') {
+      await signOut(auth);
+      setFeedback('loginFeedback', '❌ Registration rejected. Contact your manager.', 'error');
+      showScreen('auth');
+      return;
+    }
+
+    // APPROVED
+    if (regData.status !== 'approved') {
+      console.error('❌ Unexpected status:', regData.status);
+      await signOut(auth);
+      showScreen('auth');
+      return;
+    }
+
+    console.log('✅ Approved! Finding employee record for:', regData.name);
+
+    // Load employee record
+    let empId   = null;
+    let empData = { completed: [], completedAt: {}, extraTrainings: [] };
+
+    const empSnap = await getDocs(
+      query(collection(db, 'employees'), where('name', '==', regData.name))
+    );
+    if (!empSnap.empty) {
+      empId   = empSnap.docs[0].id;
+      empData = empSnap.docs[0].data();
+      console.log('✅ Employee record found. Job type:', empData.jobType);
+    } else {
+      console.warn('⚠️ No employee record for:', regData.name, '— using registration data');
+    }
+
+    currentEmployee = {
+      id:  empId || user.uid,
+      uid: user.uid,
+      ...regData,
+      ...empData,
+    };
+
+    document.getElementById('infoName').textContent    = currentEmployee.name    || '-';
+    document.getElementById('infoJobType').textContent = currentEmployee.jobType || '-';
+    document.getElementById('infoEmail').textContent   = user.email              || '-';
+
+    showScreen('app');
+    loadDashboard();
+
+  } catch(err) {
+    console.error('❌ onAuthStateChanged error:', err);
+    showScreen('auth');
+  }
+});
+
+function resetLoginBtn() {
+  const btn = document.getElementById('loginBtn');
+  if (btn) { btn.disabled = false; btn.innerHTML = t('loginBtn'); }
+}
+
+window.backToLogin  = async () => { await signOut(auth); showScreen('auth'); };
+window.handleLogout = async () => {
+  await signOut(auth);
+  currentEmployee = null; allTrainings = [];
+  celebratedMilestones = new Set();
+  showScreen('auth');
+  showToast('👋 Logged out.');
+};
+
+// ── LOAD DASHBOARD ───────────────────────────────────────
+function loadDashboard() {
+  document.getElementById('welcomeText').textContent = `Welcome, ${currentEmployee.name}!`;
+  document.getElementById('userBadge').textContent   = `👤 ${currentEmployee.name} • ${currentEmployee.jobType}`;
+
+  // Real-time trainings listener
+  onSnapshot(collection(db, 'trainings'), snap => {
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allTrainings = all.filter(tr =>
+      tr.jobType === 'All' ||
+      tr.jobType === currentEmployee.jobType ||
+      (currentEmployee.extraTrainings || []).includes(tr.id)
+    );
+    renderDashboard();
+  });
+
+  // Real-time employee listener (keeps completedAt, completed, extraTrainings up to date)
+  onSnapshot(collection(db, 'employees'), snap => {
+    const empDoc = snap.docs.find(d => normName(d.data().name) === normName(currentEmployee.name));
+    if (empDoc) {
+      currentEmployee = { ...currentEmployee, id: empDoc.id, ...empDoc.data() };
+      renderDashboard();
+      checkNotification();
+    }
+  });
+}
+
+// ── RENDER DASHBOARD ─────────────────────────────────────
+function renderDashboard() {
+  const completed   = currentEmployee.completed || [];
+  const total       = allTrainings.length;
+  const done        = allTrainings.filter(tr => completed.includes(tr.id) && !isNeedsRedo(tr)).length;
+  const overdueList = allTrainings.filter(tr => !completed.includes(tr.id) && getUrgency(tr.dueDate).days < 0);
+  const dueSoonList = allTrainings.filter(tr => !completed.includes(tr.id) && getUrgency(tr.dueDate).days >= 0 && getUrgency(tr.dueDate).days <= 7);
+  const redoCount   = allTrainings.filter(isNeedsRedo).length;
+  const pct         = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  // Summary cards
+  document.getElementById('totalCount').textContent     = total;
+  document.getElementById('completedCount').textContent = done;
+  document.getElementById('pendingCount').textContent   = total - done;
+  document.getElementById('overdueCount').textContent   = overdueList.length;
+
+  // Progress bar
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressPct').textContent  = pct + '%';
+  document.getElementById('progressLabel').textContent = `${done} of ${total} completed`;
+
+  // Milestone dots
+  [33,50,75,100].forEach(m => {
+    const el = document.getElementById(`m${m}`);
+    if (el) el.classList.toggle('reached', pct >= m);
+  });
+  checkMilestones(pct);
+
+  // Redo banner
+  const redoBanner = document.getElementById('redoBanner');
+  if (redoCount > 0) {
+    document.getElementById('redoBannerText').textContent =
+      `⚠️ ${redoCount} training${redoCount > 1 ? 's' : ''} you completed ${redoCount > 1 ? 'have' : 'has'} been updated — please redo ${redoCount > 1 ? 'them' : 'it'}!`;
+    redoBanner.style.display = 'flex';
+  } else {
+    redoBanner.style.display = 'none';
+  }
+
+  // What's New banner
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const newOnes = allTrainings.filter(tr => tr.createdAt && tr.createdAt > sevenDaysAgo && !completed.includes(tr.id));
+  const wnBanner = document.getElementById('whatsNewBanner');
+  if (newOnes.length > 0) {
+    wnBanner.style.display = 'flex';
+    document.getElementById('whatsNewTitle').textContent = t('whatsNewTitle');
+    document.getElementById('whatsNewText').textContent  =
+      `${newOnes.length} new training(s): ${newOnes.slice(0,3).map(x => x.name).join(', ')}${newOnes.length > 3 ? '...' : ''}`;
+  } else {
+    wnBanner.style.display = 'none';
+  }
+
+  // Overdue alert
+  const ob = document.getElementById('dashOverdueBanner');
+  const ol = document.getElementById('dashOverdueList');
+  if (overdueList.length > 0) {
+    ob.style.display = 'block';
+    ol.innerHTML = overdueList.map(tr =>
+      `<li><strong>${escHtml(tr.name)}</strong> — ${getUrgency(tr.dueDate).label}</li>`
+    ).join('');
+  } else { ob.style.display = 'none'; }
+
+  // Due soon alert
+  const sb = document.getElementById('dashSoonBanner');
+  const sl = document.getElementById('dashSoonList');
+  if (dueSoonList.length > 0) {
+    sb.style.display = 'block';
+    sl.innerHTML = dueSoonList.map(tr =>
+      `<li><strong>${escHtml(tr.name)}</strong> — ${getUrgency(tr.dueDate).label}</li>`
+    ).join('');
+  } else { sb.style.display = 'none'; }
+
+  renderTrainings();
+}
+
+// ── NOTIFICATION ────────────────────────────────────────
+function checkNotification() {
+  const nb = document.getElementById('notifyBanner');
+  const nt = document.getElementById('notifyText');
+  if (currentEmployee.notified) {
+    nb.style.display = 'flex';
+    nt.textContent = currentLang === 'de'
+      ? 'Ihr Manager hat Sie daran erinnert, Ihre ausstehenden Schulungen abzuschließen.'
+      : 'Your manager has sent you a reminder to complete your pending trainings.';
+  } else {
+    nb.style.display = 'none';
+  }
+}
+window.dismissNotification = async () => {
+  document.getElementById('notifyBanner').style.display = 'none';
+  try { await updateDoc(doc(db, 'employees', currentEmployee.id), { notified: false }); }
+  catch(e) { console.error(e); }
+};
+
+// ── MILESTONES & CONFETTI ────────────────────────────────
+function checkMilestones(pct) {
+  [33,50,75,100].forEach(m => {
+    if (pct >= m && !celebratedMilestones.has(m)) {
+      celebratedMilestones.add(m);
+      setTimeout(() => showMilestone(m), 400);
+    }
+  });
+}
+function showMilestone(pct) {
+  const ms = i18n[currentLang].milestones[pct];
+  document.getElementById('mpEmoji').textContent = ms.emoji;
+  document.getElementById('mpTitle').textContent = ms.title;
+  document.getElementById('mpText').textContent  = ms.text;
+  document.getElementById('milestonePopup').classList.add('show');
+  launchConfetti();
+}
+window.closeMilestone = () => {
+  document.getElementById('milestonePopup').classList.remove('show');
+  stopConfetti();
+};
+let confettiAnimId = null;
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx    = canvas.getContext('2d');
+  canvas.style.display = 'block';
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors = ['#003087','#0066cc','#38a169','#dd6b20','#e53e3e','#805ad5','#d69e2e'];
+  const pieces = Array.from({length:150}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    r: Math.random() * 6 + 4, d: Math.random() * 15 + 5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    tilt: Math.random() * 10 - 10, tiltAngle: 0,
+    tiltAngleInc: Math.random() * 0.07 + 0.05
+  }));
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.beginPath(); ctx.lineWidth = p.r/2; ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r/4, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r/4);
+      ctx.stroke();
+      p.tiltAngle += p.tiltAngleInc;
+      p.y += (Math.cos(p.d) + 3 + p.r/2) / 2;
+      p.tilt = Math.sin(p.tiltAngle) * 15;
+    });
+    confettiAnimId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+function stopConfetti() {
+  if (confettiAnimId) { cancelAnimationFrame(confettiAnimId); confettiAnimId = null; }
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  canvas.style.display = 'none';
+}
+
+// ── RENDER TRAININGS ─────────────────────────────────────
+function renderTrainings() {
+  const completed   = currentEmployee.completed   || [];
+  const completedAt = currentEmployee.completedAt || {};
+  let filtered = [...allTrainings];
+
+  // Filter
+  if (currentFilter === 'new')       filtered = filtered.filter(tr => tr.status === 'NEW');
+  if (currentFilter === 'updated')   filtered = filtered.filter(tr => tr.status === 'UPDATED');
+  if (currentFilter === 'completed') filtered = filtered.filter(tr => completed.includes(tr.id) && !isNeedsRedo(tr));
+  if (currentFilter === 'pending')   filtered = filtered.filter(tr => !completed.includes(tr.id));
+  if (currentFilter === 'overdue')   filtered = filtered.filter(tr => !completed.includes(tr.id) && getUrgency(tr.dueDate).days < 0);
+  if (currentFilter === 'upcoming')  filtered = filtered.filter(tr => !completed.includes(tr.id) && getUrgency(tr.dueDate).days >= 0);
+  if (currentFilter === 'redo')      filtered = filtered.filter(isNeedsRedo); // NEW
+
+  // Search
+  if (currentSearch) {
+    filtered = filtered.filter(tr =>
+      tr.name.toLowerCase().includes(currentSearch.toLowerCase()) ||
+      (tr.notes || '').toLowerCase().includes(currentSearch.toLowerCase())
+    );
+  }
+
+  // Sort
+  filtered.sort((a, b) => {
+    const aDone = completed.includes(a.id);
+    const bDone = completed.includes(b.id);
+    const aRedo = isNeedsRedo(a);
+    const bRedo = isNeedsRedo(b);
+    if (currentSort === 'urgency') {
+      // Redo first, then pending overdue, then pending upcoming, then done
+      if (aRedo !== bRedo) return aRedo ? -1 : 1;
+      if (aDone !== bDone) return aDone  ?  1 : -1;
+      return getUrgency(a.dueDate).days - getUrgency(b.dueDate).days;
+    }
+    if (currentSort === 'date-asc')  return (a.dueDate||'9999').localeCompare(b.dueDate||'9999');
+    if (currentSort === 'date-desc') return (b.dueDate||'0000').localeCompare(a.dueDate||'0000');
+    if (currentSort === 'az')        return a.name.localeCompare(b.name);
+    if (currentSort === 'za')        return b.name.localeCompare(a.name);
+    return 0;
+  });
+
+  const grid = document.getElementById('trainingsGrid');
+  if (!grid) return;
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>${t('noTrainings')}</p></div>`;
+    return;
+  }
+
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+  grid.innerHTML = filtered.map(tr => {
+    const isDone    = completed.includes(tr.id);
+    const needsRedo = isNeedsRedo(tr);
+    const urg       = getUrgency(tr.dueDate);
+    const isNew7    = tr.createdAt && tr.createdAt > sevenDaysAgo && !isDone;
+    const isExtra   = (currentEmployee.extraTrainings || []).includes(tr.id);
+    const compTime  = completedAt[tr.id];
+
+    // Card class
+    const cardCls = needsRedo     ? 'needsredo-card'
+                  : isDone        ? 'completed-card'
+                  : urg.days < 0  ? 'overdue-card'
+                  : tr.status==='NEW' ? 'new-card' : 'updated-card';
+
+    // Status badge
+    const statusBadge = tr.status === 'NEW'
+      ? `<span class="badge badge-new">🟢 ${t('new')}</span>`
+      : `<span class="badge badge-updated">🟠 ${t('updated')}</span>`;
+
+    // Urgency / state badge
+    const stateBadge = needsRedo
+      ? `<span class="badge badge-redo">⚠️ Redo Required</span>`
+      : isDone
+        ? `<span class="badge badge-done">${t('completedBtn')}</span>`
+        : `<span class="badge ${urg.cls}">${urg.label}</span>`;
+
+    const newItemBadge = isNew7 ? `<span class="badge badge-new-item">✨ NEW THIS WEEK</span>` : '';
+    const directBadge  = isExtra ? `<span style="font-size:11px;background:#e9f5ff;color:#1a365d;padding:2px 8px;border-radius:10px;font-weight:500;margin-left:6px">📌 Direct</span>` : '';
+
+    // Due soon warning strip
+    const dueSoonWarning = !isDone && urg.days >= 0 && urg.days <= 3
+      ? `<div class="due-warning">⏰ <strong>${t('dueSoonWarning')} ${urg.days} ${t('days')}!</strong> Please complete soon.</div>` : '';
+
+    // Manager notes — NEW
+    const notesHtml = tr.notes
+      ? `<div class="card-notes">📝 <em>${escHtml(tr.notes)}</em></div>` : '';
+
+    // Updated-on note — NEW
+    const updatedNote = tr.updatedAt
+      ? `<span style="color:#dd6b20">🔄 Updated ${new Date(tr.updatedAt).toLocaleDateString()}</span>` : '';
+
+    // Action button
+    let actionBtn;
+    if (needsRedo) {
+      actionBtn = `
+        <button class="complete-btn redo-btn" onclick="markComplete('${tr.id}','${escHtml(tr.name)}',true)">
+          🔄 Mark as Redone
+        </button>
+        <div class="completed-on">You completed an older version</div>`;
+    } else if (isDone) {
+      actionBtn = `
+        <button class="complete-btn done" disabled>${t('completedBtn')}</button>
+        ${compTime ? `<div class="completed-on">✓ Completed ${new Date(compTime).toLocaleDateString()}</div>` : ''}`;
+    } else {
+      actionBtn = `
+        <button class="complete-btn not-done" onclick="markComplete('${tr.id}','${escHtml(tr.name)}',false)">
+          ${t('markComplete')}
+        </button>`;
+    }
+
+    return `
+      <div class="training-card ${cardCls}">
+        <div class="card-header">
+          <div class="card-title">${escHtml(tr.name)}${directBadge}</div>
+          <div class="card-badges">${statusBadge}${stateBadge}${newItemBadge}</div>
+        </div>
+        <div class="card-meta">
+          <span>📅 ${tr.dueDate || t('noDate')}</span>
+          <span>💼 ${escHtml(tr.jobType)}</span>
+          ${updatedNote}
+        </div>
+        ${dueSoonWarning}
+        ${notesHtml}
+        <div class="card-spacer"></div>
+        ${actionBtn}
+      </div>`;
+  }).join('');
+}
+
+// ── MARK COMPLETE ────────────────────────────────────────
+window.markComplete = async (id, name, isRedo) => {
+  if (!currentEmployee) return;
+  const label = isRedo ? `Mark "${name}" as redone?` : `Mark "${name}" as completed?`;
+  if (!confirm(label)) return;
+
+  try {
+    const comp        = [...(currentEmployee.completed   || [])];
+    const completedAt = { ...(currentEmployee.completedAt || {}) };
+
+    if (!comp.includes(id)) comp.push(id);
+    completedAt[id] = Date.now();
+
+    // Try to update employees collection first
+    const empRef  = doc(db, 'employees', currentEmployee.id);
+    const empSnap = await getDoc(empRef);
+
+    if (empSnap.exists()) {
+      await updateDoc(empRef, { completed: comp, completedAt });
+    } else {
+      // Fallback: store on registration doc
+      await updateDoc(doc(db, 'registrations', currentEmployee.uid || currentEmployee.id), { completed: comp, completedAt });
+    }
+
+    currentEmployee.completed   = comp;
+    currentEmployee.completedAt = completedAt;
+
+    showToast(isRedo ? `🔄 "${name}" marked as redone!` : `✅ "${name}" completed!`, 'success');
+    renderDashboard();
+
+  } catch(err) {
+    console.error('markComplete error:', err);
+    showToast('❌ Failed to save. Check your connection.', 'error');
+  }
+};
+
+// ── FILTERS, SORT, SEARCH ────────────────────────────────
+window.setFilter = (f, btn) => {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTrainings();
+};
+window.setSort   = (s) => { currentSort   = s; renderTrainings(); };
+window.setSearch = (s) => { currentSearch = s; renderTrainings(); };
+
+// ── CHANGE PASSWORD ──────────────────────────────────────
+window.checkPwStrength = (pw) => {
+  const el = document.getElementById('pwStrength'); if (!el) return;
+  if (!pw) { el.textContent = ''; return; }
+  if (pw.length < 6)                        { el.className = 'pw-strength pw-weak';   el.textContent = '🔴 Too short'; }
+  else if (pw.length < 10 || !/\d/.test(pw)){ el.className = 'pw-strength pw-medium'; el.textContent = '🟠 Medium'; }
+  else                                       { el.className = 'pw-strength pw-strong'; el.textContent = '🟢 Strong'; }
+};
+
+window.changePassword = async () => {
+  const cur  = document.getElementById('curPw').value;
+  const nw   = document.getElementById('newPw').value;
+  const conf = document.getElementById('confirmPw').value;
+  if (!cur || !nw || !conf) { setFeedback('pwFeedback', '⚠️ Fill in all fields.', 'error'); return; }
+  if (nw.length < 6)        { setFeedback('pwFeedback', '⚠️ Min. 6 characters.', 'error');  return; }
+  if (nw !== conf)          { setFeedback('pwFeedback', '⚠️ Passwords do not match.', 'error'); return; }
+  try {
+    const credential = EmailAuthProvider.credential(currentUser.email, cur);
+    await reauthenticateWithCredential(currentUser, credential);
+    await updatePassword(currentUser, nw);
+    ['curPw','newPw','confirmPw'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('pwStrength').textContent = '';
+    setFeedback('pwFeedback', '✅ Password updated successfully!', 'success');
+    showToast('✅ Password updated!');
+  } catch(err) {
+    if (err.code === 'auth/wrong-password') {
+      setFeedback('pwFeedback', '❌ Current password is incorrect.', 'error');
+    } else {
+      setFeedback('pwFeedback', `❌ ${err.message}`, 'error');
+    }
+  }
+};
+</script>
+</body>
+</html>
